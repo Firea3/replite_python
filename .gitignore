@@ -1,0 +1,21 @@
+# 环境变量（不上传！存放密钥）
+.env
+.env.*
+
+# 虚拟环境文件夹，整个不上传
+.venv/
+venv/
+
+# Python 缓存文件
+__pycache__/
+*.pyc
+*.pyo
+
+# PyCharm IDE配置
+.idea/
+
+# VSCode
+.vscode/
+
+# 日志
+*.log
