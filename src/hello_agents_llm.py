@@ -1,5 +1,4 @@
 import os
-from urllib import response
 
 from openai import OpenAI
 from dotenv import load_dotenv
@@ -7,14 +6,17 @@ from dotenv import load_dotenv
 from typing import List, Dict
 #typing是类型提示，eg：不用的话是def add（a：int） -> int返回值和函数的类型都是int，而更复杂的Dict字典和List列表都要用模块来提示
 
-#加载env中的环境变量
-load_dotenv()
+from pathlib import Path
+
+env_path = Path(__file__).parent.parent / ".env"
+load_dotenv(env_path)
+
 
 class HelloAgentsLLM:
     """
     为项目封装的LLM调用类，用于调用任意的大模型，默认使用流式相应
     """
-    def __init__(self, model:str = None, aipkey:str = None, baseurl:str = None, timeout:int = None):
+    def __init__(self, model:str = None, aipkey:str = None, baseurl:str = None, timeout:int = 60):
         """
         初始化客户端，优先使用传入参数，没有使用环境变量参数
         :param model: 模型名称，例如 gpt-3.5-turbo；不传就读取环境变量 MODEL
@@ -27,6 +29,8 @@ class HelloAgentsLLM:
         aipkey = aipkey or os.getenv("LLM_API_KEY")
         baseurl = baseurl or os.getenv("LLM_BASE_URL")
         timeout = timeout or os.getenv("LLM_TIMEOUT")
+        #test
+        #print(self.model, aipkey, baseurl, timeout)
 
         if not all([self.model, aipkey, baseurl, timeout]):
             raise ValueError("模型ID，API密钥和服务地址必须被提供或在.env文件中定义")
@@ -51,8 +55,42 @@ class HelloAgentsLLM:
             )
         #处理流式响应
             print("✅大语言模型响应成功")
+            collected_content = []
+            for chunk in response:
+                content = chunk.choices[0].delta.content or ""
+                #eg:chunk是小流式段，每个是你，第一个，然后好，delta增量，content内容
+                print(content, end="", flush=True)
+                #eg:flush是一个字一个字打印，end是结束，默认是换行
+                collected_content.append(content)
+            print()
+            return "".join(collected_content)
+
 
         except Exception as e:
-            print(e)
+            print(f"❌调用LLM API时发生错误:{e}")
+            return None
+
+#客户端使用示例
+if __name__ == "__main__":
+
+    #测试用的，别的模块导入的时候不会跑
+    try:
+        agent = HelloAgentsLLM()
+
+        exampleMessages = [
+            {"role":"system", "content":"你是一个严谨负责的python工程师，遇到问题时会先构建一个框架，输出对应的技术文档."},
+            {"role":"user", "content":"我希望将一个python代码文件有一个网页前端来调用，我该怎么做"}
+        ]
+        print("🧠——————调用LLM模型————————")
+        responseText = agent.think(exampleMessages, temperature=1)
+        if responseText:
+            print("\n\n----模型响应结束----")
+            #print(responseText)
+
+    except ValueError as e:
+        print(f"调用LLM模型错误：{e}")
+
+
+
 
 
