@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "apitest"
+version = "0.1.0"
+description = "pytest + requests + YAML 数据驱动 + Allure"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "apitest contributors" }]
+keywords = ["api-testing", "pytest", "yaml", "automation", "allure"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development :: Testing",
+]
+dependencies = [
+    "requests>=2.28",
+    "PyYAML>=6.0",
+    "jsonschema>=4.18",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "pytest-xdist>=3.5",
+    "allure-pytest>=2.13",
+]
+
+[tool.setuptools.packages.find]
+include = ["apitest*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# -p no:cacheprovider：框架自测不依赖 pytest 缓存；同时避免受限 CI 沙箱对临时目录
+# rename 的限制产生无关警告（GitHub Actions 上同样可以正常工作）
+addopts = "-ra --strict-markers --tb=short -p no:cacheprovider"
